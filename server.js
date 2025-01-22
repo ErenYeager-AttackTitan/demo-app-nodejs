@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid'); // Import uuid for unique ID generation
 
 const app = express();
 const PORT = 3000;
@@ -19,16 +20,19 @@ if (!fs.existsSync(dataFile)) {
 
 // POST endpoint to save data
 app.post('/save', (req, res) => {
-  const { id, name, link, key } = req.body;
+  const { name, link, key } = req.body;
 
   // Validate request
-  if (!id || !name || !link || !key) {
-    return res.status(400).json({ error: 'All fields (id, name, link, key) are required.' });
+  if (!name || !link || !key) {
+    return res.status(400).json({ error: 'All fields (name, link, key) are required.' });
   }
 
   if (key !== 'your-secret-key') { // Replace 'your-secret-key' with your desired secret key
     return res.status(403).json({ error: 'Invalid key.' });
   }
+
+  // Generate a unique ID
+  const id = uuidv4();
 
   // Read existing data from the file
   let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
@@ -39,7 +43,7 @@ app.post('/save', (req, res) => {
   // Save updated data to the file
   fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
 
-  res.json({ message: 'Data saved successfully!', data });
+  res.json({ message: 'Data saved successfully!', id, name, link });
 });
 
 // Start the server
