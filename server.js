@@ -1,34 +1,48 @@
-var http = require("http"),
-    fs = require("fs"),
-    vaultDir = "/application/vault/",
-    showVault = process.env.SHOW_VAULT,
-    vaultFiles = process.env.VAULT_FILES,
-    vaultSecret = process.env.SECRET_KEY,
-    files = [],
-    port = 8888;
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 
-function handleRequest(req, res) {
-  res.writeHead(200, {"Content-type":"text/html"});
-  res.write("Hello, World! This is Node.js app v100.");
+const app = express();
+const PORT = 3000;
 
-  // Only show Vault files if the SHOW_VAULT KV is set to true in Consul
-  if (fs.existsSync(vaultDir) && showVault && (showVault.toUpperCase() === "TRUE" || showVault === "1")) {
-    files = fs.readdirSync(vaultDir);
+// Middleware to parse JSON request bodies
+app.use(bodyParser.json());
 
-    for (var i = 0; i < files.length; i++) {
-      file = files[i];
+// Path to the JSON file
+const dataFile = path.join(__dirname, 'data.json');
 
-      // Only show this file if included in the VAULT_FILES KV in Consul
-      if (vaultFiles && vaultFiles.indexOf(file) > -1) {
-        res.write(fs.readFileSync(vaultDir + file, "binary"));
-      }
-    }
-  }
-
-  res.end();
+// Ensure the JSON file exists
+if (!fs.existsSync(dataFile)) {
+  fs.writeFileSync(dataFile, JSON.stringify([]));
 }
 
-http.createServer(handleRequest).listen(port);
+// POST endpoint to save data
+app.post('/save', (req, res) => {
+  const { id, name, link, key } = req.body;
 
-console.log("Static file server running at\n  => http://localhost:" + port);
-console.log("\nVault secret: " + vaultSecret);
+  // Validate request
+  if (!id || !name || !link || !key) {
+    return res.status(400).json({ error: 'All fields (id, name, link, key) are required.' });
+  }
+
+  if (key !== 'your-secret-key') { // Replace 'your-secret-key' with your desired secret key
+    return res.status(403).json({ error: 'Invalid key.' });
+  }
+
+  // Read existing data from the file
+  let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+
+  // Add new data
+  data.push({ id, name, link });
+
+  // Save updated data to the file
+  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
+
+  res.json({ message: 'Data saved successfully!', data });
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
