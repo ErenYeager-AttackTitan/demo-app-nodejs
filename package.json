@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A simple Node.js server to save data with a POST request to a JSON file.",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
