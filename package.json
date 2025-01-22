@@ -1,8 +1,25 @@
 {
-  "name": "demo-app",
-  "description": "Node.js Application",
+  "name": "nodejs-json-storage",
   "version": "1.0.0",
-  "engines": {
-    "node": "4.1.2"
+  "description": "A simple Node.js server to save data with a POST request to a JSON file.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "json",
+    "post",
+    "server"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "uuid": "^9.0.0"
   }
 }
